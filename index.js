@@ -4,10 +4,11 @@ const Manager = require("./lib/Manager");
 const Engineer = require("./lib/Engineer");
 const Intern = require("./lib/Intern");
 const fs = require("fs");
+const generateHtml = require("./util/generateHtml");
 
 const employees = [];
 
-function promptEmployeeType() {
+function promptEmployee() {
   inquirer
     .prompt([
       {
@@ -15,6 +16,26 @@ function promptEmployeeType() {
         name: "addEmployee",
         message: "Do you want to add an employee?",
       },
+    ])
+    .then((answer) => {
+      if (answer.addEmployee) {
+        promptEmployeeType();
+      } else {
+        fs.writeFile("index.html", generateHtml(employees), (err, data) => {
+          if (err) {
+            throw err;
+          }
+          console.log("complete!");
+        });
+      }
+    })
+    .catch((error) => {
+      console.log("Error:", error);
+    });
+}
+function promptEmployeeType() {
+  inquirer
+    .prompt([
       {
         type: "list",
         name: "employeeType",
@@ -23,23 +44,19 @@ function promptEmployeeType() {
       },
     ])
     .then((answer) => {
-      if (answer.addEmployee) {
-        switch (answer.employeeType) {
-          case "Manager":
-            promptManager();
-            break;
-          case "Engineer":
-            promptEngineer();
-            break;
-          case "Intern":
-            promptIntern();
-            break;
-          default:
-            console.log("Invalid employee type");
-            promptEmployeeType();
-        }
-      } else {
-        console.log("Employees:", employees);
+      switch (answer.employeeType) {
+        case "Manager":
+          promptManager();
+          break;
+        case "Engineer":
+          promptEngineer();
+          break;
+        case "Intern":
+          promptIntern();
+          break;
+        default:
+          console.log("Invalid employee type");
+          promptEmployeeType();
       }
     })
     .catch((error) => {
@@ -69,11 +86,6 @@ function promptManager() {
         name: "officeNumber",
         message: "Enter the manager's office number:",
       },
-      {
-        type: "confirm",
-        name: "addEmployee",
-        message: "Do you want to add another employee?",
-      },
     ])
     .then((answers) => {
       const manager = new Manager(
@@ -84,12 +96,7 @@ function promptManager() {
       );
 
       employees.push(manager);
-
-      if (answers.addEmployee) {
-        promptEmployeeType();
-      } else {
-        console.log("Employees:", employees);
-      }
+      promptEmployee();
     })
     .catch((error) => {
       console.log("Error:", error);
@@ -119,11 +126,6 @@ function promptEngineer() {
         name: "github",
         message: "Enter the engineer's GitHub username:",
       },
-      {
-        type: "confirm",
-        name: "addEmployee",
-        message: "Do you want to add another employee?",
-      },
     ])
     .then((answers) => {
       const engineer = new Engineer(
@@ -134,12 +136,7 @@ function promptEngineer() {
       );
 
       employees.push(engineer);
-
-      if (answers.addEmployee) {
-        promptEmployeeType();
-      } else {
-        console.log("Employees:", employees);
-      }
+      promptEmployee();
     })
     .catch((error) => {
       console.log("Error:", error);
@@ -161,13 +158,13 @@ function promptIntern() {
       },
       {
         type: "input",
-        name: "school",
-        message: "Enter the intern's school name:",
+        name: "email",
+        message: "Enter the interns's email address:",
       },
       {
-        type: "confirm",
-        name: "addEmployee",
-        message: "Do you want to add another employee?",
+        type: "input",
+        name: "school",
+        message: "Enter the intern's school name:",
       },
     ])
     .then((answers) => {
@@ -179,16 +176,11 @@ function promptIntern() {
       );
 
       employees.push(intern);
-
-      if (answers.addEmployee) {
-        promptEmployeeType();
-      } else {
-        console.log("Employees:", employees);
-      }
+      promptEmployee();
     })
     .catch((error) => {
       console.log("Error:", error);
     });
 }
 
-promptEmployeeType();
+promptEmployee();
